@@ -9,8 +9,8 @@ For a list of available options, enter `python checkers.py -h`
 
 By default, running `python checkers.py` will run a multiplayer checkers game.
 
-For now, only multiplayer is supported. We will add AlphaBeta agent and ReinforcementLearningAgent soon.
+For now, only multiplayer is supported. We will add AlphaBeta agent and ReinforcementLearning agent soon.
 
 ## References
 
-Board class for checkers game specified in game.py is adapted from project of [SamRagusa](https://github.com/SamRagusa/Checkers-Reinforcement-Learning).
+Board class for checkers game specified in game.py is adapted from the project of [SamRagusa](https://github.com/SamRagusa/Checkers-Reinforcement-Learning).
