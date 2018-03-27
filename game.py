@@ -350,15 +350,14 @@ class Game:
         quiet = self.rules.quiet
         game_state = self.game_state
 
-        if not quiet:
-            game_state.print_board()
-
         while not game_state.is_game_over():
             # get the agent whose turn is next
             active_agent = self.first_agent if game_state.is_first_agent_turn else self.second_agent
 
             if not quiet:
+                game_state.print_board()
                 print('Current turn is of agent: ' + str(game_state.player_symbol(game_state.player_info())))
+                print('Available moves: ' + str(game_state.get_legal_actions()))
 
             action = active_agent.get_action(game_state)
 
@@ -366,6 +365,3 @@ class Game:
             self.game_state = next_game_state
 
             game_state = self.game_state
-
-            if not quiet:
-                game_state.print_board()

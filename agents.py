@@ -25,3 +25,17 @@ class KeyBoardAgent(Agent):
 		end = [int(pos) for pos in input("Enter end position: ").split(" ")]
 
 		return [start, end]
+
+"""
+class AlphaBetaAgent(Agent):
+
+	def get_action(self, state):
+
+"""
+
+"""
+class RLAgent(Agent):
+
+	def get_action(self, state):
+
+"""
