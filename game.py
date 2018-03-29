@@ -350,9 +350,26 @@ class Game:
         quiet = self.rules.quiet
         game_state = self.game_state
 
+        learning_agents = []
+
+        if self.first_agent.is_learning_agent:
+            learning_agents.append(self.first_agent)
+
+        if self.second_agent.is_learning_agent:
+            learning_agents.append(self.second_agent)
+
+
+        # inform learning agents about new episode start
+        for learning_agent in learning_agents:
+            learning_agent.start_episode()
+
+
         while not game_state.is_game_over():
             # get the agent whose turn is next
             active_agent = self.first_agent if game_state.is_first_agent_turn else self.second_agent
+
+            if active_agent.is_learning_agent:
+                active_agent.observation_function(game_state)
 
             if not quiet:
                 game_state.print_board()
@@ -365,3 +382,8 @@ class Game:
             self.game_state = next_game_state
 
             game_state = self.game_state
+
+
+        # inform learning agents about new episode end
+        for learning_agent in learning_agents:
+            learning_agent.stop_episode()

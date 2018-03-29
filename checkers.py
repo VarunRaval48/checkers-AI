@@ -195,6 +195,7 @@ def read_command(argv):
     return args
 
 
+
 def run_games(first_agent, second_agent, first_agent_turn, num_games, num_training=0):
     """
     first_agent: instance of Agent which reflects first agent
