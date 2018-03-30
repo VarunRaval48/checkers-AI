@@ -3,6 +3,9 @@ import copy
 from functools import reduce
 
 
+CHECKERS_FEATURE_COUNT = 0
+
+
 class Board:
 
     """
@@ -323,6 +326,17 @@ class Board:
                     temp_line = temp_line + "///|"
             print(temp_line)
             print(norm_line)
+
+
+
+def checkers_features(state, action):
+    """
+    state: game state of the checkers game
+    action: action for which the feature is requested
+
+    Returns: list of feature values
+    """
+    pass
 
 
 
