@@ -51,8 +51,8 @@ class AlphaBetaAgent(Agent):
 
 class ReinforcementLearningAgent(Agent):
 
-	def __init__(self, num_training=10):
-		Agent.__init__(self, True)
+	def __init__(self, num_training=10, is_learning_agent=True):
+		Agent.__init__(self, is_learning_agent)
 
 		self.num_training = num_training
 		self.episodes_so_far = 0
@@ -112,6 +112,10 @@ class ReinforcementLearningAgent(Agent):
 
 		self.episodes_so_far += 1
 
+		if self.episodes_so_far >= self.num_training:
+			self.alpha = 0.0
+			self.epsilon = 0.0
+
 
 	# TODO
 	def reward_function(self, state, action, next_state):
@@ -136,15 +140,38 @@ class ReinforcementLearningAgent(Agent):
 
 class QlearningAgent(ReinforcementLearningAgent):
 
-	def __init__(self, alpha=0.9, gamma=0.1, epsilon=0.5, num_training=10):
-		ReinforcementLearningAgent.__init__(self, num_training=num_training)
+	def __init__(self, alpha=0.9, gamma=0.1, epsilon=0.5, num_training=10, is_learning_agent=True, 
+				weights=None):
+
+		"""
+		alpha: learning rate
+		gamma: discount factor
+		epsilon: exploration constant
+		num_training: number of training steps before stop learning
+		is_learning_agent: whether to treat this agent as learning agent or not
+		weights: default weights
+		"""
+
+		ReinforcementLearningAgent.__init__(self, num_training=num_training, 
+			is_learning_agent=is_learning_agent)
 
 		self.alpha = alpha
 		self.gamma = gamma
 		self.epsilon = epsilon
 
-		# initialize weights for the features
-		self.weights = [0]*CHECKERS_FEATURE_COUNT
+		if not is_learning_agent:
+			self.epsilon = 0.0
+			self.alpha = 0.0
+
+
+		if weights is None:
+			# initialize weights for the features
+			self.weights = [0]*CHECKERS_FEATURE_COUNT
+		else:
+			if len(weights) != CHECKERS_FEATURE_COUNT:
+				raise Exception("Invalid weights " + weights)
+
+			self.weights = weights
 
 
     def get_q_value(self, state, action, features):
