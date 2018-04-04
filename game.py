@@ -364,40 +364,45 @@ class Game:
         quiet = self.rules.quiet
         game_state = self.game_state
 
-        learning_agents = []
+        # learning_agents = []
 
-        if self.first_agent.is_learning_agent:
-            learning_agents.append(self.first_agent)
+        # if self.first_agent.is_learning_agent:
+        #     learning_agents.append(self.first_agent)
 
-        if self.second_agent.is_learning_agent:
-            learning_agents.append(self.second_agent)
+        # if self.second_agent.is_learning_agent:
+        #     learning_agents.append(self.second_agent)
 
 
         # inform learning agents about new episode start
-        for learning_agent in learning_agents:
-            learning_agent.start_episode()
+        # for learning_agent in learning_agents:
+        #     learning_agent.start_episode()
 
 
+        action = None
         while not game_state.is_game_over():
             # get the agent whose turn is next
             active_agent = self.first_agent if game_state.is_first_agent_turn else self.second_agent
-
-            if active_agent.is_learning_agent:
-                active_agent.observation_function(game_state)
 
             if not quiet:
                 game_state.print_board()
                 print('Current turn is of agent: ' + str(game_state.player_symbol(game_state.player_info())))
                 print('Available moves: ' + str(game_state.get_legal_actions()))
 
-            action = active_agent.get_action(game_state)
+            if action is None:
+                action = active_agent.get_action(game_state)
 
             next_game_state = game_state.generate_successor(action)
             self.game_state = next_game_state
 
             game_state = self.game_state
 
+            if active_agent.is_learning_agent:
+                action = active_agent.observation_function(game_state)
+            else:
+                action = None
+
+            input()
 
         # inform learning agents about new episode end
-        for learning_agent in learning_agents:
-            learning_agent.stop_episode()
+        # for learning_agent in learning_agents:
+        #     learning_agent.stop_episode()
