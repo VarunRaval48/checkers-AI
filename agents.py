@@ -35,7 +35,14 @@ class KeyBoardAgent(Agent):
         start = [int(pos) for pos in input("Enter start position (e.g. x y): ").split(" ")]
         end = [int(pos) for pos in input("Enter end position (e.g. x y): ").split(" ")]
 
-        return [start, end]
+        ends = []
+        i=1
+        while i < len(end):
+            ends.append([end[i-1], end[i]])
+            i += 2
+
+        action = [start] + ends
+        return action
 
 
 """
@@ -81,6 +88,18 @@ class ReinforcementLearningAgent(Agent):
         """
         pass
 
+    def start_episode(self):
+        # Accumulate rewards while training for each episode and show total rewards 
+        # at the end of each episode i.e. when stop episode
+        self.prev_state = None
+        self.prev_action = None
+
+        self.episode_rewards = 0.0
+
+
+    def stop_episode(self):
+        print('reward this episode', self.episode_rewards)
+
 
     @abstractmethod
     def start_learning(self):
@@ -104,7 +123,8 @@ class ReinforcementLearningAgent(Agent):
 
     # TODO
     def reward_function(self, state, action, next_state):
-        pass
+        # make a reward function for the environment
+        return 0
 
 
     def do_action(self, state, action):
@@ -115,7 +135,7 @@ class ReinforcementLearningAgent(Agent):
         self.prev_action = action
 
 
-class QlearningAgent(ReinforcementLearningAgent):
+class QLearningAgent(ReinforcementLearningAgent):
 
     def __init__(self, alpha=0.9, gamma=0.1, epsilon=0.5, is_learning_agent=True, weights=None):
 
@@ -156,12 +176,6 @@ class QlearningAgent(ReinforcementLearningAgent):
         """
         called by environment to notify agent of starting new episode
         """
-
-        self.prev_state = None
-        self.prev_action = None
-
-        # TODO Decide what to do
-        # self.episode_rewards = 0.0
 
         self.alpha = self.original_alpha
         self.epsilon = self.original_epsilon
@@ -216,6 +230,7 @@ class QlearningAgent(ReinforcementLearningAgent):
         max_value = None
         arg_max = None
         for i, action in enumerate(actions):
+            print(str(checkers_features(state, action)))
             temp_q_value = self.get_q_value(state, action, checkers_features(state, action))
             if max_value is None or max_value < temp_q_value:
                 max_value = temp_q_value
@@ -241,7 +256,7 @@ class QlearningAgent(ReinforcementLearningAgent):
         if not legal_actions:
             return None
 
-        if util.flip_coin(self.epsilon):
+        if flip_coin(self.epsilon):
             action = random.choice(legal_actions)
         else:
             action = self.compute_action_from_q_values(state, legal_actions)

@@ -3,7 +3,7 @@ import copy
 from functools import reduce
 
 
-CHECKERS_FEATURE_COUNT = 0
+CHECKERS_FEATURE_COUNT = 6
 
 
 class Board:
@@ -334,9 +334,43 @@ def checkers_features(state, action):
     state: game state of the checkers game
     action: action for which the feature is requested
 
-    Returns: list of feature values
+    Returns: list of feature values for the agent whose turn is in the current state
     """
-    pass
+    next_state = state.generate_successor(action, False)
+
+    agent_ind = 0 if state.is_first_agent_turn() else 1
+    oppn_ind = 1 if state.is_first_agent_turn() else 0
+
+    num_pieces_list = state.get_pieces_and_kings()
+
+    agent_pawns = num_pieces_list[agent_ind]
+    agent_kings = num_pieces_list[agent_ind + 2]
+    agent_pieces = agent_pawns + agent_kings
+
+    oppn_pawns = num_pieces_list[oppn_ind]
+    oppn_kings = num_pieces_list[oppn_ind + 2]
+    oppn_pieces = oppn_pawns + oppn_kings
+
+
+    num_pieces_list_n = next_state.get_pieces_and_kings()
+
+    agent_pawns_n = num_pieces_list_n[agent_ind]
+    agent_kings_n = num_pieces_list_n[agent_ind + 2]
+    agent_pieces_n = agent_pawns_n + agent_kings_n
+
+    oppn_pawns_n = num_pieces_list_n[oppn_ind]
+    oppn_kings_n = num_pieces_list_n[oppn_ind + 2]
+    oppn_pieces_n = oppn_pawns_n + oppn_kings_n
+
+    f_1 = agent_pawns_n - agent_pawns
+    f_2 = agent_kings_n - agent_kings
+    f_3 = agent_pieces_n - agent_pieces
+
+    f_4 = oppn_pawns_n - oppn_pawns
+    f_5 = oppn_kings_n - oppn_kings
+    f_6 = oppn_pieces_n - oppn_pieces
+
+    return [f_1, f_2, f_3, f_4, f_5, f_6]
 
 
 
@@ -364,24 +398,30 @@ class Game:
         quiet = self.rules.quiet
         game_state = self.game_state
 
-        # learning_agents = []
+        learning_agents = []
 
-        # if self.first_agent.is_learning_agent:
-        #     learning_agents.append(self.first_agent)
+        if self.first_agent.is_learning_agent:
+            learning_agents.append(self.first_agent)
 
-        # if self.second_agent.is_learning_agent:
-        #     learning_agents.append(self.second_agent)
-
+        if self.second_agent.is_learning_agent:
+            learning_agents.append(self.second_agent)
 
         # inform learning agents about new episode start
-        # for learning_agent in learning_agents:
-        #     learning_agent.start_episode()
+        for learning_agent in learning_agents:
+            learning_agent.start_episode()
 
 
         action = None
-        while not game_state.is_game_over():
+        num_moves = 0
+        while not game_state.is_game_over() and num_moves < self.rules.max_moves:
             # get the agent whose turn is next
-            active_agent = self.first_agent if game_state.is_first_agent_turn else self.second_agent
+            # print('number of pieces', game_state.get_pieces_and_kings(True), game_state.get_pieces_and_kings(False))
+            active_agent = self.first_agent if game_state.is_first_agent_turn() else self.second_agent
+
+            if active_agent.is_learning_agent:
+                action = active_agent.observation_function(game_state)
+            else:
+                action = None
 
             if not quiet:
                 game_state.print_board()
@@ -396,13 +436,12 @@ class Game:
 
             game_state = self.game_state
 
-            if active_agent.is_learning_agent:
-                action = active_agent.observation_function(game_state)
-            else:
-                action = None
-
+            num_moves += 1
             input()
 
+        # after the game is over, tell learning agents to learn accordingly
+
         # inform learning agents about new episode end
-        # for learning_agent in learning_agents:
-        #     learning_agent.stop_episode()
+        for learning_agent in learning_agents:
+            learning_agent.observation_function(game_state)
+            learning_agent.stop_episode()
