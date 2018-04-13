@@ -104,23 +104,28 @@ class GameState:
             return self.board.P2_SYMBOL
 
 
-    def get_pieces_and_kings(self, player=True):
+    def get_pieces_and_kings(self, player=None):
         """
-        player: True if for the first player, false for the second player
+        player: True if for the first player, false for the second player, None for both players
 
         Returns: the number of pieces and kings for every player in the current state
         """
         spots = self.board.spots
+
+        # first agent pawns, second agent pawns, first agent kings, second agent kings
         count = [0,0,0,0]   
         for x in spots:
             for y in x:
                 if y != 0:
                     count[y-1] = count[y-1] + 1
 
-        if player:
-            return [count[0], count[2]]  #Player 1
+        if player is not None:
+            if player:
+                return [count[0], count[2]]  #Player 1
+            else:
+                return [count[1], count[3]]  #Player 2
         else:
-            return [count[1], count[3]]  #Player 2
+            return count
 
 
 class ClassicGameRules:
