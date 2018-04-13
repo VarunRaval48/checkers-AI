@@ -104,14 +104,33 @@ class GameState:
             return self.board.P2_SYMBOL
 
 
+    def get_pieces_and_kings(self, player=True):
+        """
+        player: True if for the first player, false for the second player
+
+        Returns: the number of pieces and kings for every player in the current state
+        """
+        spots = self.board.spots
+        count = [0,0,0,0]   
+        for x in spots:
+            for y in x:
+                if y != 0:
+                    count[y-1] = count[y-1] + 1
+
+        if player:
+            return [count[0], count[2]]  #Player 1
+        else:
+            return [count[1], count[3]]  #Player 2
+
+
 class ClassicGameRules:
     """
     This class is used to control the flow of game.
     The only control right now is whether to show game board at every step or not.
     """
 
-    def __init__(self, timeout=30):
-        self.timeout = timeout
+    def __init__(self, max_moves=200):
+        self.max_moves = max_moves
         self.quiet = False
 
     def new_game(self, first_agent, second_agent, first_agent_turn, quiet=False):
@@ -135,7 +154,7 @@ def load_agent(agent_type):
     elif agent_type == 'ab':
         return AlphaBetaAgent()
     elif agent_type == 'rl':
-        return RLAgent()
+        return QLearningAgent()
     else:
         raise Exception('Invalid agent ' + str(agent_type))
 
@@ -207,6 +226,13 @@ def run_games(first_agent, second_agent, first_agent_turn, num_games, num_traini
 
     for i in range(num_games):
         rules = ClassicGameRules()
+
+        if first_agent.is_learning_agent:
+            first_agent.start_learning()
+
+        if second_agent.is_learning_agent:
+            second_agent.start_learning()
+
         game = rules.new_game(first_agent, second_agent, first_agent_turn)
 
         game.run()
