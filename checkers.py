@@ -4,6 +4,8 @@ import sys
 from game import *
 from agents import *
 
+WEIGHTS_SAVE_FREQ = 1
+
 class GameState:
     """
     A class which stores information about the state of a game.
@@ -214,6 +216,22 @@ def read_command(argv):
     parser.add_option('-q', '--quiet', dest='quiet', type='int', 
                       help=default('to be quiet or not'), default=0)
 
+    parser.add_option('-x', '--firstAgentSave', dest='first_save', type='string',
+                      help=default('file to save for the first agent (used only ' +
+                        'if this agent is a learning agent)'), default='./data/first_save')
+
+    parser.add_option('-y', '--secondAgentSave', dest='second_save', type='string',
+                      help=default('file to save for the second agent (used only ' +
+                        'if this agent is a learning agent)'), default='./data/second_save')
+
+    parser.add_option('-z', '--firstAgentWeights', dest='first_weights', type='string',
+                      help=default('file to save weights for the first agent (used only ' +
+                        'if this agent is a learning agent)'), default='./data/first_weights')
+
+    parser.add_option('-w', '--secondAgentWeights', dest='second_weights', type='string',
+                      help=default('file to save weights for the second agent (used only ' +
+                        'if this agent is a learning agent)'), default='./data/second_weights')
+
     options, garbage = parser.parse_args(argv)
 
     if len(garbage) > 0:
@@ -224,7 +242,6 @@ def read_command(argv):
     args['num_games'] = options.num_games
 
     args['first_agent'] = load_agent(options.first_agent, options.first_agent_learn)
-
     args['second_agent'] = load_agent(options.second_agent, options.second_agent_learn)
 
     args['first_agent_turn'] = options.turn == 1
@@ -233,11 +250,20 @@ def read_command(argv):
 
     args['quiet'] = True if options.quiet else False
 
+    args['first_file_name'] = options.first_save
+    args['second_file_name'] = options.second_save
+
+    args['first_weights_file_name'] = options.first_weights
+    args['second_weights_file_name'] = options.second_weights
+
     return args
 
 
 
-def run_games(first_agent, second_agent, first_agent_turn, num_games, num_training=0, quiet=False):
+def run_games(first_agent, second_agent, first_agent_turn, num_games, num_training=0, quiet=False, 
+                first_file_name="./data/first_save", second_file_name="./data/second_save", 
+                first_weights_file_name="./data/first_weights", 
+                second_weights_file_name="./data/second_weights"):
     """
     first_agent: instance of Agent which reflects first agent
     second_agent: instance of Agent which reflects second agent
@@ -245,6 +271,15 @@ def run_games(first_agent, second_agent, first_agent_turn, num_games, num_traini
     num_games: total number of games to run without training
     num_training: total number of training games to run
     """
+
+    if first_agent.is_learning_agent:
+        first_f = open(first_file_name, "w+")
+        first_f_w = open(first_weights_file_name, "w+")
+
+    if second_agent.is_learning_agent:
+        second_f = open(second_file_name, "w+")
+        second_f_w = open(second_weights_file_name, "w+")
+
 
     for i in range(num_games):
         rules = ClassicGameRules()
@@ -257,7 +292,33 @@ def run_games(first_agent, second_agent, first_agent_turn, num_games, num_traini
 
         game = rules.new_game(first_agent, second_agent, first_agent_turn, quiet=quiet)
 
-        game.run()
+        num_moves, game_state = game.run()
+
+        if first_agent.is_learning_agent:
+            reward = first_agent.episode_rewards
+            win = 1 if game_state.is_first_agent_win() else 0
+            w_str = str(num_moves) + "," + str(win) + "," + str(reward) + "\n"
+            first_f.write(w_str)
+            if num_moves % WEIGHTS_SAVE_FREQ == 0:
+                w_str = str(first_agent.weights) + "\n"
+                first_f_w.write(w_str)
+
+        if second_agent.is_learning_agent:
+            reward = second_agent.episode_rewards
+            win = 1 if game_state.is_second_agent_win() else 0
+            w_str = str(num_moves) + "," + str(win) + "," + str(reward) + "\n"
+            second_f.write(w_str)
+            if (i+1) % WEIGHTS_SAVE_FREQ == 0:
+                w_str = str(second_agent.weights) + "\n"
+                second_f_w.write(w_str)
+
+    if first_agent.is_learning_agent:
+        first_f.close()
+        first_f_w.close()
+
+    if second_agent.is_learning_agent:
+        second_f.close()
+        second_f_w.close()
 
 
 if __name__ == '__main__':

@@ -156,6 +156,7 @@ class QLearningAgent(ReinforcementLearningAgent):
         self.alpha = alpha
         self.gamma = gamma
         self.epsilon = epsilon
+        self.lambda_v = 1.0
 
         if not is_learning_agent:
             self.epsilon = 0.0
