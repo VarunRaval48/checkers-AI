@@ -147,7 +147,7 @@ class ClassicGameRules:
         return game
 
 
-def load_agent(agent_type):
+def load_agent(agent_type, agent_learn):
     """
     agent_type: type of agent, e.g. k, ab, rl
 
@@ -159,7 +159,8 @@ def load_agent(agent_type):
     elif agent_type == 'ab':
         return AlphaBetaAgent()
     elif agent_type == 'rl':
-        return QLearningAgent()
+        is_learning_agent = True if agent_learn else False
+        return QLearningAgent(is_learning_agent=is_learning_agent)
     else:
         raise Exception('Invalid agent ' + str(agent_type))
 
@@ -190,8 +191,19 @@ def read_command(argv):
     # rl for reinforcement learning agent
     parser.add_option('-f', '--agentFirstType', dest='first_agent', type='string',
                       help=default('the first agent of game'), default='k')
+
+    parser.add_option('-l', '--agentFirstLearn', dest='first_agent_learn', type='int',
+                      help=default('the first agent of game is learning ' +
+                        '(only applicable for learning agents)'), default=1)
+
+
     parser.add_option('-s', '--agentSecondType', dest='second_agent', type='string',
                       help=default('the second agent of game'), default='k')
+
+    parser.add_option('-d', '--agentsecondLearn', dest='second_agent_learn', type='int',
+                      help=default('the second agent of game is learning ' +
+                        '(only applicable for learning agents)'), default=1)
+
 
     parser.add_option('-t', '--turn', dest='turn', type='int', 
                       help=default('which agent should take first turn'), default=1)
@@ -208,9 +220,9 @@ def read_command(argv):
 
     args['num_games'] = options.num_games
 
-    args['first_agent'] = load_agent(options.first_agent)
+    args['first_agent'] = load_agent(options.first_agent, options.first_agent_learn)
 
-    args['second_agent'] = load_agent(options.second_agent)
+    args['second_agent'] = load_agent(options.second_agent, options.second_agent_learn)
 
     args['first_agent_turn'] = options.turn == 1
 
