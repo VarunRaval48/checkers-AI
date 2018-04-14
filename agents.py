@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from util import *
 import random
-from game import CHECKERS_FEATURE_COUNT, checkers_features
+from game import CHECKERS_FEATURE_COUNT, checkers_features, checkers_reward
 
 
 class Agent(ABC):
@@ -124,7 +124,7 @@ class ReinforcementLearningAgent(Agent):
     # TODO
     def reward_function(self, state, action, next_state):
         # make a reward function for the environment
-        return 0
+        return checkers_reward(state, action, next_state)
 
 
     def do_action(self, state, action):
@@ -215,7 +215,9 @@ class QLearningAgent(ReinforcementLearningAgent):
         if not actions:
             return 0.0
 
-        q_values = [self.get_q_value(state, action, checkers_features(state, action)) for action in actions]
+        q_values = \
+        [self.get_q_value(state, action, checkers_features(state, action)) for action in actions]
+
         return max(q_values)
 
 
@@ -301,4 +303,5 @@ class QLearningAgent(ReinforcementLearningAgent):
     def observation_function(self, state):
         if self.prev_state is not None:
             reward = self.reward_function(self.prev_state, self.prev_action, state)
+            print('reward is', reward)
             self.observe_transition(self.prev_state, self.prev_action, state, reward)

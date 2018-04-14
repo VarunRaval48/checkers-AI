@@ -3,7 +3,7 @@ import copy
 from functools import reduce
 
 
-CHECKERS_FEATURE_COUNT = 6
+CHECKERS_FEATURE_COUNT = 3
 
 
 class Board:
@@ -362,16 +362,56 @@ def checkers_features(state, action):
     oppn_kings_n = num_pieces_list_n[oppn_ind + 2]
     oppn_pieces_n = oppn_pawns_n + oppn_kings_n
 
-    f_1 = agent_pawns_n - agent_pawns
-    f_2 = agent_kings_n - agent_kings
-    f_3 = agent_pieces_n - agent_pieces
+    # f_1 = agent_pawns_n - agent_pawns
+    # f_2 = agent_kings_n - agent_kings
+    # f_3 = agent_pieces_n - agent_pieces
 
     f_4 = oppn_pawns_n - oppn_pawns
     f_5 = oppn_kings_n - oppn_kings
     f_6 = oppn_pieces_n - oppn_pieces
 
-    return [f_1, f_2, f_3, f_4, f_5, f_6]
+    return [f_4, f_5, f_6]
 
+
+def checkers_reward(state, action, next_state):
+
+    if next_state.is_game_over():
+        # infer turn from current state, because at the end same state is used by both agents
+        if state.is_first_agent_turn():
+            return 500 if next_state.is_first_agent_win() else -500
+        else:
+            return 500 if next_state.is_second_agent_win() else -500
+
+    agent_ind = 0 if state.is_first_agent_turn() else 1
+    oppn_ind = 1 if state.is_first_agent_turn() else 0
+
+    num_pieces_list = state.get_pieces_and_kings()
+
+    agent_pawns = num_pieces_list[agent_ind]
+    agent_kings = num_pieces_list[agent_ind + 2]
+
+    oppn_pawns = num_pieces_list[oppn_ind]
+    oppn_kings = num_pieces_list[oppn_ind + 2]
+
+    num_pieces_list_n = next_state.get_pieces_and_kings()
+
+    agent_pawns_n = num_pieces_list_n[agent_ind]
+    agent_kings_n = num_pieces_list_n[agent_ind + 2]
+
+    oppn_pawns_n = num_pieces_list_n[oppn_ind]
+    oppn_kings_n = num_pieces_list_n[oppn_ind + 2]
+
+    r_1 = agent_pawns - agent_pawns_n
+    r_2 = agent_kings - agent_kings_n
+    r_3 = oppn_pawns - oppn_pawns_n
+    r_4 = oppn_kings - oppn_kings_n
+
+    reward = r_3 * 0.2 + r_4 * 0.3 + r_1 * (-0.4) + r_2 * (-0.5)
+
+    if reward == 0:
+        reward = -0.1
+
+    return reward
 
 
 class Game:
