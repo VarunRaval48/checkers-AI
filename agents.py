@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from util import *
 import random
 from game import CHECKERS_FEATURE_COUNT, checkers_features, checkers_reward
-
+import numpy as np
 
 class Agent(ABC):
 
@@ -137,7 +137,7 @@ class ReinforcementLearningAgent(Agent):
 
 class QLearningAgent(ReinforcementLearningAgent):
 
-    def __init__(self, alpha=0.1, gamma=0.1, epsilon=0.5, is_learning_agent=True, weights=None):
+    def __init__(self, alpha=0.01, gamma=0.1, epsilon=0.5, is_learning_agent=True, weights=None):
 
         """
         alpha: learning rate
@@ -164,12 +164,12 @@ class QLearningAgent(ReinforcementLearningAgent):
 
         if weights is None:
             # initialize weights for the features
-            self.weights = [0]*CHECKERS_FEATURE_COUNT
+            self.weights = np.zeros(CHECKERS_FEATURE_COUNT)
         else:
             if len(weights) != CHECKERS_FEATURE_COUNT:
                 raise Exception("Invalid weights " + weights)
 
-            self.weights = weights
+            self.weights = np.array(weights, dtype=float)
 
 
     def start_learning(self):
@@ -197,10 +197,7 @@ class QLearningAgent(ReinforcementLearningAgent):
         """
           Returns: Q(state,action)
         """
-        q_value = 0.0
-        for i in range(CHECKERS_FEATURE_COUNT):
-            q_value += self.weights[i] * features[i]
-
+        q_value = np.dot(self.weights, features)
         return q_value
 
 
@@ -229,17 +226,11 @@ class QLearningAgent(ReinforcementLearningAgent):
         if not actions:
             return None
 
-        max_value = None
-        arg_max = None
-        for i, action in enumerate(actions):
-            # print(str(checkers_features(state, action)))
-            temp_q_value = self.get_q_value(state, action, checkers_features(state, action))
-            if max_value is None or max_value < temp_q_value:
-                max_value = temp_q_value
-                arg_max = i
-
         # if max_value < 0:
         #     return random.choice(actions)
+
+        arg_max = np.argmax([self.get_q_value(state, action, checkers_features(state, action)) 
+            for action in actions])
 
         return actions[arg_max]
 

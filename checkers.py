@@ -1,7 +1,8 @@
 import copy
 import sys
+import csv
 
-from util import open_file
+from util import open_file, load_weights
 
 from game import *
 from agents import *
@@ -26,6 +27,7 @@ class GameState:
             prev_spots = copy.deepcopy(prev_state.board.spots)
 
         self.board = Board(prev_spots, the_player_turn)
+        self.max_moves_done = False
 
 
     def get_legal_actions(self):
@@ -60,7 +62,7 @@ class GameState:
         """
         Returns: True if either agent has won the game
         """
-        return self.board.is_game_over()
+        return self.board.is_game_over() or self.max_moves_done
 
     def is_first_agent_win(self):
         """
@@ -131,6 +133,9 @@ class GameState:
         else:
             return count
 
+    def set_max_moves_done(self, done=True):
+        self.max_moves_done = done
+
 
 class ClassicGameRules:
     """
@@ -151,7 +156,7 @@ class ClassicGameRules:
         return game
 
 
-def load_agent(agent_type, agent_learn):
+def load_agent(agent_type, agent_learn, weights=None):
     """
     agent_type: type of agent, e.g. k, ab, rl
 
@@ -164,7 +169,7 @@ def load_agent(agent_type, agent_learn):
         return AlphaBetaAgent()
     elif agent_type == 'rl':
         is_learning_agent = True if agent_learn else False
-        return QLearningAgent(is_learning_agent=is_learning_agent)
+        return QLearningAgent(is_learning_agent=is_learning_agent, weights=weights)
     else:
         raise Exception('Invalid agent ' + str(agent_type))
 
@@ -243,8 +248,11 @@ def read_command(argv):
 
     args['num_games'] = options.num_games
 
-    args['first_agent'] = load_agent(options.first_agent, options.first_agent_learn)
-    args['second_agent'] = load_agent(options.second_agent, options.second_agent_learn)
+    first_weights = load_weights(options.first_weights)
+    args['first_agent'] = load_agent(options.first_agent, options.first_agent_learn, first_weights)
+
+    second_weights = load_weights(options.second_weights)
+    args['second_agent'] = load_agent(options.second_agent, options.second_agent_learn, second_weights)
 
     args['first_agent_turn'] = options.turn == 1
 
@@ -277,10 +285,12 @@ def run_games(first_agent, second_agent, first_agent_turn, num_games, num_traini
     if first_agent.is_learning_agent:
         first_f = open_file(first_file_name, header=write_str)
         first_f_w = open_file(first_weights_file_name)
+        first_writer_w = csv.writer(first_f_w, lineterminator='\n')
 
     if second_agent.is_learning_agent:
         second_f = open_file(second_file_name, header=write_str)
         second_f_w = open_file(second_weights_file_name)
+        second_writer_w = csv.writer(second_f_w, lineterminator='\n')
 
 
     for i in range(num_games):
@@ -301,18 +311,18 @@ def run_games(first_agent, second_agent, first_agent_turn, num_games, num_traini
             win = 1 if game_state.is_first_agent_win() else 0
             w_str = str(num_moves) + "," + str(win) + "," + str(reward) + "\n"
             first_f.write(w_str)
-            if num_moves % WEIGHTS_SAVE_FREQ == 0:
-                w_str = str(first_agent.weights) + "\n"
-                first_f_w.write(w_str)
+
+            if (i+1) % WEIGHTS_SAVE_FREQ == 0:
+                first_writer_w.writerow(first_agent.weights)
 
         if second_agent.is_learning_agent:
             reward = second_agent.episode_rewards
             win = 1 if game_state.is_second_agent_win() else 0
             w_str = str(num_moves) + "," + str(win) + "," + str(reward) + "\n"
             second_f.write(w_str)
+
             if (i+1) % WEIGHTS_SAVE_FREQ == 0:
-                w_str = str(second_agent.weights) + "\n"
-                second_f_w.write(w_str)
+                second_writer_w.writerow(second_agent.weights)
 
     if first_agent.is_learning_agent:
         first_f.close()

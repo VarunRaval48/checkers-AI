@@ -3,7 +3,7 @@ import copy
 from functools import reduce
 
 
-CHECKERS_FEATURE_COUNT = 3
+CHECKERS_FEATURE_COUNT = 7
 
 
 class Board:
@@ -362,15 +362,24 @@ def checkers_features(state, action):
     oppn_kings_n = num_pieces_list_n[oppn_ind + 2]
     oppn_pieces_n = oppn_pawns_n + oppn_kings_n
 
-    # f_1 = agent_pawns_n - agent_pawns
-    # f_2 = agent_kings_n - agent_kings
-    # f_3 = agent_pieces_n - agent_pieces
+    features = []
 
-    f_4 = oppn_pawns_n - oppn_pawns
-    f_5 = oppn_kings_n - oppn_kings
-    f_6 = oppn_pieces_n - oppn_pieces
+    # features.append(agent_pawns_n - agent_pawns)
+    # features.append(agent_kings_n - agent_kings)
+    # features.append(agent_pieces_n - agent_pieces)
 
-    return [f_4, f_5, f_6]
+    # pawns and kings of agent and opponent in current state
+    features.append(agent_pawns)
+    features.append(agent_kings)
+    features.append(oppn_pawns)
+    features.append(oppn_kings)
+
+    features.append(oppn_pawns_n - oppn_pawns)
+    features.append(oppn_kings_n - oppn_kings)
+    features.append(oppn_pieces_n - oppn_pieces)
+
+    # print(features)
+    return features
 
 
 def checkers_reward(state, action, next_state):
@@ -478,6 +487,9 @@ class Game:
 
             num_moves += 1
             # input()
+
+        if num_moves >= self.rules.max_moves:
+            game_state.set_max_moves_done()
 
         # after the game is over, tell learning agents to learn accordingly
 
