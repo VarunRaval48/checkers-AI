@@ -378,9 +378,9 @@ def checkers_reward(state, action, next_state):
     if next_state.is_game_over():
         # infer turn from current state, because at the end same state is used by both agents
         if state.is_first_agent_turn():
-            return 500 if next_state.is_first_agent_win() else -500
+            return 10 if next_state.is_first_agent_win() else -10
         else:
-            return 500 if next_state.is_second_agent_win() else -500
+            return 10 if next_state.is_second_agent_win() else -10
 
     agent_ind = 0 if state.is_first_agent_turn() else 1
     oppn_ind = 1 if state.is_first_agent_turn() else 0
@@ -488,3 +488,5 @@ class Game:
 
         game_state.print_board()
         print(num_moves)
+
+        return num_moves, game_state
