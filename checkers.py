@@ -1,6 +1,8 @@
 import copy
 import sys
 
+from util import open_file
+
 from game import *
 from agents import *
 
@@ -259,7 +261,6 @@ def read_command(argv):
     return args
 
 
-
 def run_games(first_agent, second_agent, first_agent_turn, num_games, num_training=0, quiet=False, 
                 first_file_name="./data/first_save", second_file_name="./data/second_save", 
                 first_weights_file_name="./data/first_weights", 
@@ -272,13 +273,14 @@ def run_games(first_agent, second_agent, first_agent_turn, num_games, num_traini
     num_training: total number of training games to run
     """
 
+    write_str = "num_moves,win,reward\n"
     if first_agent.is_learning_agent:
-        first_f = open(first_file_name, "w+")
-        first_f_w = open(first_weights_file_name, "w+")
+        first_f = open_file(first_file_name, header=write_str)
+        first_f_w = open_file(first_weights_file_name)
 
     if second_agent.is_learning_agent:
-        second_f = open(second_file_name, "w+")
-        second_f_w = open(second_weights_file_name, "w+")
+        second_f = open_file(second_file_name, header=write_str)
+        second_f_w = open_file(second_weights_file_name)
 
 
     for i in range(num_games):

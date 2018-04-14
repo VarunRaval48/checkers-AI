@@ -137,7 +137,7 @@ class ReinforcementLearningAgent(Agent):
 
 class QLearningAgent(ReinforcementLearningAgent):
 
-    def __init__(self, alpha=0.9, gamma=0.1, epsilon=0.5, is_learning_agent=True, weights=None):
+    def __init__(self, alpha=0.1, gamma=0.1, epsilon=0.5, is_learning_agent=True, weights=None):
 
         """
         alpha: learning rate
@@ -156,7 +156,6 @@ class QLearningAgent(ReinforcementLearningAgent):
         self.alpha = alpha
         self.gamma = gamma
         self.epsilon = epsilon
-        self.lambda_v = 1.0
 
         if not is_learning_agent:
             self.epsilon = 0.0
