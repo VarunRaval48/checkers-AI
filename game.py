@@ -477,7 +477,7 @@ class Game:
             game_state = self.game_state
 
             num_moves += 1
-            input()
+            # input()
 
         # after the game is over, tell learning agents to learn accordingly
 
@@ -485,3 +485,6 @@ class Game:
         for learning_agent in learning_agents:
             learning_agent.observation_function(game_state)
             learning_agent.stop_episode()
+
+        game_state.print_board()
+        print(num_moves)

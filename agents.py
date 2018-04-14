@@ -232,7 +232,7 @@ class QLearningAgent(ReinforcementLearningAgent):
         max_value = None
         arg_max = None
         for i, action in enumerate(actions):
-            print(str(checkers_features(state, action)))
+            # print(str(checkers_features(state, action)))
             temp_q_value = self.get_q_value(state, action, checkers_features(state, action))
             if max_value is None or max_value < temp_q_value:
                 max_value = temp_q_value
@@ -303,5 +303,5 @@ class QLearningAgent(ReinforcementLearningAgent):
     def observation_function(self, state):
         if self.prev_state is not None:
             reward = self.reward_function(self.prev_state, self.prev_action, state)
-            print('reward is', reward)
+            # print('reward is', reward)
             self.observe_transition(self.prev_state, self.prev_action, state, reward)

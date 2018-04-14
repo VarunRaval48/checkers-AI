@@ -211,6 +211,9 @@ def read_command(argv):
     parser.add_option('-r', '--numTraining', dest='num_train', type='int',
                       help=default('number of training steps'), default=0)
 
+    parser.add_option('-q', '--quiet', dest='quiet', type='int', 
+                      help=default('to be quiet or not'), default=0)
+
     options, garbage = parser.parse_args(argv)
 
     if len(garbage) > 0:
@@ -228,11 +231,13 @@ def read_command(argv):
 
     args['num_training'] = options.num_train
 
+    args['quiet'] = True if options.quiet else False
+
     return args
 
 
 
-def run_games(first_agent, second_agent, first_agent_turn, num_games, num_training=0):
+def run_games(first_agent, second_agent, first_agent_turn, num_games, num_training=0, quiet=False):
     """
     first_agent: instance of Agent which reflects first agent
     second_agent: instance of Agent which reflects second agent
@@ -250,7 +255,7 @@ def run_games(first_agent, second_agent, first_agent_turn, num_games, num_traini
         if second_agent.is_learning_agent:
             second_agent.start_learning()
 
-        game = rules.new_game(first_agent, second_agent, first_agent_turn)
+        game = rules.new_game(first_agent, second_agent, first_agent_turn, quiet=quiet)
 
         game.run()
 
