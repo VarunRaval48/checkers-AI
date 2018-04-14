@@ -7,7 +7,8 @@ from util import open_file, load_weights
 from game import *
 from agents import *
 
-WEIGHTS_SAVE_FREQ = 1
+WEIGHTS_SAVE_FREQ = 10
+WRITE_FREQ = 2
 
 class GameState:
     """
@@ -287,10 +288,16 @@ def run_games(first_agent, second_agent, first_agent_turn, num_games, num_traini
         first_f_w = open_file(first_weights_file_name)
         first_writer_w = csv.writer(first_f_w, lineterminator='\n')
 
+        first_f_str = ""
+        first_writer_w_list = []
+
     if second_agent.is_learning_agent:
         second_f = open_file(second_file_name, header=write_str)
         second_f_w = open_file(second_weights_file_name)
         second_writer_w = csv.writer(second_f_w, lineterminator='\n')
+
+        second_f_str = ""
+        second_writer_w_list = []
 
 
     for i in range(num_games):
@@ -310,19 +317,38 @@ def run_games(first_agent, second_agent, first_agent_turn, num_games, num_traini
             reward = first_agent.episode_rewards
             win = 1 if game_state.is_first_agent_win() else 0
             w_str = str(num_moves) + "," + str(win) + "," + str(reward) + "\n"
-            first_f.write(w_str)
+            first_f_str += w_str
+            # first_f.write(w_str)
 
             if (i+1) % WEIGHTS_SAVE_FREQ == 0:
-                first_writer_w.writerow(first_agent.weights)
+                first_writer_w_list.append(first_agent.weights)
+                # first_writer_w.writerow(first_agent.weights)
+    
+            if (i+1) % WRITE_FREQ == 0:
+                first_f.write(first_f_str)
+                first_writer_w.writerows(first_writer_w_list)
+
+                first_f_str = ""
+                first_writer_w_list = []
 
         if second_agent.is_learning_agent:
             reward = second_agent.episode_rewards
             win = 1 if game_state.is_second_agent_win() else 0
             w_str = str(num_moves) + "," + str(win) + "," + str(reward) + "\n"
-            second_f.write(w_str)
+            second_f_str += w_str
+            # second_f.write(w_str)
 
             if (i+1) % WEIGHTS_SAVE_FREQ == 0:
-                second_writer_w.writerow(second_agent.weights)
+                second_writer_w_list.append(second_agent.weights)
+                # second_writer_w.writerow(second_agent.weights)
+
+            if (i+1) % WRITE_FREQ == 0:
+                second_f.write(second_f_str)
+                second_writer_w.writerows(second_writer_w_list)
+
+                second_f_str = ""
+                second_writer_w_list = []
+
 
     if first_agent.is_learning_agent:
         first_f.close()
