@@ -15,10 +15,10 @@ import numpy as np
 NUM_WEIGHTS_REM = 5
 WEIGHTS_SAVE_FREQ = 50
 WRITE_FREQ = 100
-TEST_FREQ = 100
+TEST_FREQ = 10
 TEST_GAMES = 100
 NOTIFY_FREQ = 50
-CHANGE_AGENT_FREQ = 1000
+CHANGE_AGENT_FREQ = 10
 
 class GameState:
     """
@@ -276,6 +276,19 @@ def read_command(argv):
                       help=default('file to save weights for the second agent (used only ' +
                         'if this agent is a learning agent)'), default='./data/second_weights')
 
+    parser.add_option('-u', '--firstResult', dest='first_results', type='string',
+                      help=default('file to save results for the first agent (used only ' +
+                        'if this agent is a learning agent)'), default='./data/first_results')
+
+    parser.add_option('-v', '--secondResult', dest='second_results', type='string',
+                      help=default('file to save results for the second agent (used only ' +
+                        'if this agent is a learning agent)'), default='./data/second_results')
+
+    parser.add_option('-p', '--playSelf', dest='play_against_self', type='int',
+                      help=default('whether first agent is to play agains itself (only' +
+                        'for rl agents)'), default=0)
+
+
     options, garbage = parser.parse_args(argv)
 
     if len(garbage) > 0:
@@ -303,6 +316,11 @@ def read_command(argv):
     args['first_weights_file_name'] = options.first_weights
     args['second_weights_file_name'] = options.second_weights
 
+    args['first_result_file_name'] = options.first_results
+    args['second_result_file_name'] = options.second_results
+
+    args['play_against_self'] = options.play_against_self == 1
+
     return args
 
 
@@ -311,7 +329,8 @@ def run_games(first_agent, second_agent, first_agent_turn, num_games, num_traini
                 first_weights_file_name="./data/first_weights", 
                 second_weights_file_name="./data/second_weights",
                 first_result_file_name="./data/first_results",
-                second_result_file_name="./data/second_results"):
+                second_result_file_name="./data/second_results", 
+                play_against_self=False):
     """
     first_agent: instance of Agent which reflects first agent
     second_agent: instance of Agent which reflects second agent
@@ -424,7 +443,7 @@ def run_games(first_agent, second_agent, first_agent_turn, num_games, num_traini
                 if second_agent.has_been_learning_agent:
                     second_writer_res.writerow(result_s)
 
-            if first_agent.has_been_learning_agent:
+            if first_agent.has_been_learning_agent and play_against_self:
                 if (i+1) % CHANGE_AGENT_FREQ == 0:
                     weights = first_w_deq[-1]
                     second_agent = QLearningAgent(weights=weights, is_learning_agent=False)
