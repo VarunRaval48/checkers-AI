@@ -137,6 +137,24 @@ class GameState:
     def set_max_moves_done(self, done=True):
         self.max_moves_done = done
 
+    def num_attacks(self):
+        """
+        Returns: total number of pieces to which this player is attacking
+        """
+        piece_locations = self.board.get_piece_locations()
+
+        capture_moves = reduce(lambda x, y: x + y, list(map(self.board.get_capture_moves, piece_locations)))
+        num_pieces_in_attack = 0
+
+        pieces_in_attack = set()
+        for move in capture_moves:
+            for i, loc in enumerate(move):
+                if (i+1) < len(move):
+                    loc_2 = move[i+1]
+                    pieces_in_attack.add(( (loc_2[0] + loc[0]) / 2, (loc_2[1] + loc[1]) / 2 + loc[0] % 2,))
+
+        num_pieces_in_attack = len(pieces_in_attack)
+        return num_pieces_in_attack
 
 class ClassicGameRules:
     """

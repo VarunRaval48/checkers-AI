@@ -3,7 +3,7 @@ import copy
 from functools import reduce
 
 
-CHECKERS_FEATURE_COUNT = 7
+CHECKERS_FEATURE_COUNT = 8
 
 
 class Board:
@@ -201,11 +201,11 @@ class Board:
                             answer.append(temp_move1)
                             
         return answer
-    
-        
-    def get_possible_next_moves(self):
+
+
+    def get_piece_locations(self):
         """
-        Gets the possible moves that can be made from the current board configuration.
+        Gets all the pieces of the current player
         """
         piece_locations = []
         for j in range(self.HEIGHT):
@@ -214,7 +214,17 @@ class Board:
                     (self.spots[j][i] == self.P1 or self.spots[j][i] == self.P1_K)) or \
                 (self.player_turn == False and 
                     (self.spots[j][i] == self.P2 or self.spots[j][i] == self.P2_K)):
-                    piece_locations.append([j, i])
+                    piece_locations.append([j, i])  
+
+        return piece_locations        
+    
+        
+    def get_possible_next_moves(self):
+        """
+        Gets the possible moves that can be made from the current board configuration.
+        """
+
+        piece_locations = self.get_piece_locations()
 
         try:  #Should check to make sure if this try statement is still necessary 
             capture_moves = list(reduce(lambda a, b: a + b, list(map(self.get_capture_moves, piece_locations))))  # CHECK IF OUTER LIST IS NECESSARY
@@ -378,6 +388,8 @@ def checkers_features(state, action):
     features.append(oppn_kings_n - oppn_kings)
     features.append(oppn_pieces_n - oppn_pieces)
 
+    features.append(next_state.num_attacks())
+
     # print(features)
     return features
 
@@ -476,6 +488,8 @@ class Game:
                 game_state.print_board()
                 print('Current turn is of agent: ' + str(game_state.player_symbol(game_state.player_info())))
                 print('Available moves: ' + str(game_state.get_legal_actions()))
+                # game_state.num_attacks()
+                input()
 
             if action is None:
                 action = active_agent.get_action(game_state)
