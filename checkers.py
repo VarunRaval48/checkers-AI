@@ -1,14 +1,24 @@
 import copy
 import sys
 import csv
+import traceback
+from collections import deque
 
 from util import open_file, load_weights
 
 from game import *
 from agents import *
 
-WEIGHTS_SAVE_FREQ = 10
-WRITE_FREQ = 2
+import numpy as np
+
+# number of weights to remember
+NUM_WEIGHTS_REM = 5
+WEIGHTS_SAVE_FREQ = 50
+WRITE_FREQ = 100
+TEST_FREQ = 100
+TEST_GAMES = 100
+NOTIFY_FREQ = 50
+CHANGE_AGENT_FREQ = 1000
 
 class GameState:
     """
@@ -70,6 +80,10 @@ class GameState:
         Returns: False if game is still on or first agent has lost and True iff first agent has won
         """
 
+        # If max moves has reached, none of the agents has won
+        if self.max_moves_done:
+            return False
+
         if not self.is_game_over() or self.is_first_agent_turn():
             return False
 
@@ -79,6 +93,10 @@ class GameState:
         """
         Returns: False if game is still on or second agent has lost and True iff second agent has won
         """
+
+        # If max moves has reached, none of the agents has won
+        if self.max_moves_done:
+            return False
 
         if not self.is_game_over() or not self.is_first_agent_turn():
             return False
@@ -291,7 +309,9 @@ def read_command(argv):
 def run_games(first_agent, second_agent, first_agent_turn, num_games, num_training=0, quiet=False, 
                 first_file_name="./data/first_save", second_file_name="./data/second_save", 
                 first_weights_file_name="./data/first_weights", 
-                second_weights_file_name="./data/second_weights"):
+                second_weights_file_name="./data/second_weights",
+                first_result_file_name="./data/first_results",
+                second_result_file_name="./data/second_results"):
     """
     first_agent: instance of Agent which reflects first agent
     second_agent: instance of Agent which reflects second agent
@@ -300,81 +320,137 @@ def run_games(first_agent, second_agent, first_agent_turn, num_games, num_traini
     num_training: total number of training games to run
     """
 
-    write_str = "num_moves,win,reward\n"
-    if first_agent.is_learning_agent:
-        first_f = open_file(first_file_name, header=write_str)
-        first_f_w = open_file(first_weights_file_name)
-        first_writer_w = csv.writer(first_f_w, lineterminator='\n')
-
-        first_f_str = ""
-        first_writer_w_list = []
-
-    if second_agent.is_learning_agent:
-        second_f = open_file(second_file_name, header=write_str)
-        second_f_w = open_file(second_weights_file_name)
-        second_writer_w = csv.writer(second_f_w, lineterminator='\n')
-
-        second_f_str = ""
-        second_writer_w_list = []
-
-
-    for i in range(num_games):
-        rules = ClassicGameRules()
-
+    try:
+        write_str = "num_moves,win,reward\n"
         if first_agent.is_learning_agent:
-            first_agent.start_learning()
+            first_f = open_file(first_file_name, header=write_str)
+
+            first_w_deq = deque()
+
+            first_f_res = open_file(first_result_file_name)
+            first_writer_res = csv.writer(first_f_res, lineterminator='\n')
+
+            first_f_str = ""
+            first_writer_w_list = []
 
         if second_agent.is_learning_agent:
-            second_agent.start_learning()
+            second_f = open_file(second_file_name, header=write_str)
 
-        game = rules.new_game(first_agent, second_agent, first_agent_turn, quiet=quiet)
+            second_w_deq = deque()
 
-        num_moves, game_state = game.run()
+            second_f_res = open_file(second_result_file_name)
+            second_writer_res = csv.writer(second_f_res, lineterminator='\n')
 
-        if first_agent.is_learning_agent:
-            reward = first_agent.episode_rewards
-            win = 1 if game_state.is_first_agent_win() else 0
-            w_str = str(num_moves) + "," + str(win) + "," + str(reward) + "\n"
-            first_f_str += w_str
-            # first_f.write(w_str)
+            second_f_str = ""
+            second_writer_w_list = []
 
-            if (i+1) % WEIGHTS_SAVE_FREQ == 0:
-                first_writer_w_list.append(first_agent.weights)
-                # first_writer_w.writerow(first_agent.weights)
-    
-            if (i+1) % WRITE_FREQ == 0:
-                first_f.write(first_f_str)
-                first_writer_w.writerows(first_writer_w_list)
+        # learn weights
+        # save weights
+        # test using weights
+        # change agent
 
-                first_f_str = ""
-                first_writer_w_list = []
+        print('starting game', 0)
+        for i in range(num_games):
 
-        if second_agent.is_learning_agent:
-            reward = second_agent.episode_rewards
-            win = 1 if game_state.is_second_agent_win() else 0
-            w_str = str(num_moves) + "," + str(win) + "," + str(reward) + "\n"
-            second_f_str += w_str
-            # second_f.write(w_str)
+            if (i+1) % NOTIFY_FREQ == 0:
+                print('Starting game', (i+1))
 
-            if (i+1) % WEIGHTS_SAVE_FREQ == 0:
-                second_writer_w_list.append(second_agent.weights)
-                # second_writer_w.writerow(second_agent.weights)
+            rules = ClassicGameRules()
 
-            if (i+1) % WRITE_FREQ == 0:
-                second_f.write(second_f_str)
-                second_writer_w.writerows(second_writer_w_list)
+            if first_agent.has_been_learning_agent:
+                first_agent.start_learning()
 
-                second_f_str = ""
-                second_writer_w_list = []
+            if second_agent.has_been_learning_agent:
+                second_agent.start_learning()
+
+            game = rules.new_game(first_agent, second_agent, first_agent_turn, quiet=quiet)
+
+            num_moves, game_state = game.run()
+
+            if first_agent.is_learning_agent:
+                reward = first_agent.episode_rewards
+                win = 1 if game_state.is_first_agent_win() else 0
+                w_str = str(num_moves) + "," + str(win) + "," + str(reward) + "\n"
+                first_f_str += w_str
+
+                if (i+1) % WEIGHTS_SAVE_FREQ == 0:
+                    if len(first_w_deq) != 0 and len(first_w_deq) % NUM_WEIGHTS_REM == 0:
+                        # print('popping')
+                        first_w_deq.popleft()
+                    first_w_deq.append(np.array(first_agent.weights))
+        
+                if (i+1) % WRITE_FREQ == 0:
+                    first_f.write(first_f_str)
+                    first_f_str = ""
+
+            if second_agent.is_learning_agent:
+                reward = second_agent.episode_rewards
+                win = 1 if game_state.is_second_agent_win() else 0
+                w_str = str(num_moves) + "," + str(win) + "," + str(reward) + "\n"
+                second_f_str += w_str
+
+                if (i+1) % WEIGHTS_SAVE_FREQ == 0:
+                    if len(second_w_deq) != 0 and len(second_w_deq) % NUM_WEIGHTS_REM == 0:
+                        second_w_deq.popleft()
+                    second_w_deq.append(np.array(second_agent.weights))
+
+                if (i+1) % WRITE_FREQ == 0:
+                    second_f.write(second_f_str)
+                    second_f_str = ""
+
+            if (i+1) % TEST_FREQ == 0:
+                if first_agent.is_learning_agent:
+                    first_agent.stop_learning()
+
+                if second_agent.is_learning_agent:
+                    second_agent.stop_learning()
+
+                result_f = []
+                result_s = []
+                print('strting', TEST_GAMES, 'tests')
+                for i in range(TEST_GAMES):
+                    game = rules.new_game(first_agent, second_agent, first_agent_turn, quiet=True)
+                    num_moves, game_state = game.run()
+
+                    if first_agent.has_been_learning_agent:
+                        result_f.append(1 if game_state.is_first_agent_win() else 0)
+
+                    if second_agent.has_been_learning_agent:
+                        result_s.append(1 if game_state.is_second_agent_win() else 0)
+
+                if first_agent.has_been_learning_agent:
+                    first_writer_res.writerow(result_f)
+
+                if second_agent.has_been_learning_agent:
+                    second_writer_res.writerow(result_s)
+
+            if first_agent.has_been_learning_agent:
+                if (i+1) % CHANGE_AGENT_FREQ == 0:
+                    weights = first_w_deq[-1]
+                    second_agent = QLearningAgent(weights=weights, is_learning_agent=False)
 
 
-    if first_agent.is_learning_agent:
-        first_f.close()
-        first_f_w.close()
+    except Exception as e:
+        traceback.print_tb(e.__traceback__)
 
-    if second_agent.is_learning_agent:
-        second_f.close()
-        second_f_w.close()
+    finally:
+        if first_agent.has_been_learning_agent:
+            first_f.close()
+            first_f_res.close()
+
+            first_f_w = open_file(first_weights_file_name)
+            first_writer_w = csv.writer(first_f_w, lineterminator='\n')
+            first_writer_w.writerows(first_w_deq)
+            first_f_w.close()
+
+        if second_agent.has_been_learning_agent:
+            second_f.close()
+            second_f_res.close()
+
+            second_f_w = open_file(second_weights_file_name)
+            second_writer_w = csv.writer(second_f_w, lineterminator='\n')
+            second_writer_w.writerows(second_w_deq)
+            second_f_w.close()
 
 
 if __name__ == '__main__':

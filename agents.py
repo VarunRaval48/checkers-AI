@@ -8,7 +8,7 @@ class Agent(ABC):
 
     def __init__(self, is_learning_agent=False):
         self.is_learning_agent = is_learning_agent
-
+        self.has_been_learning_agent = is_learning_agent
 
     @abstractmethod
     def get_action(self, state):
@@ -98,8 +98,8 @@ class ReinforcementLearningAgent(Agent):
 
 
     def stop_episode(self):
-        print('reward this episode', self.episode_rewards)
-
+        # print('reward this episode', self.episode_rewards)
+        pass
 
     @abstractmethod
     def start_learning(self):

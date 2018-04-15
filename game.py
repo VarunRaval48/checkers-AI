@@ -512,7 +512,7 @@ class Game:
             learning_agent.observation_function(game_state)
             learning_agent.stop_episode()
 
-        game_state.print_board()
-        print(num_moves)
+        # game_state.print_board()
+        # print(num_moves)
 
         return num_moves, game_state
