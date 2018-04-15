@@ -3,6 +3,7 @@ import sys
 import csv
 import traceback
 from collections import deque
+from multiprocessing import Pool
 
 from util import open_file, load_weights
 
@@ -324,6 +325,40 @@ def read_command(argv):
     return args
 
 
+def run_test(rules, first_agent, second_agent, first_agent_turn, quiet=True):
+    game = rules.new_game(first_agent, second_agent, first_agent_turn, quiet=True)
+    num_moves, game_state = game.run()
+    return num_moves, game_state
+
+
+def multiprocess(rules, first_agent, second_agent, first_agent_turn, quiet=True):
+    results = []
+
+    result_f = []
+    result_s = []
+
+    pool = Pool()
+    kwds = {'quiet': quiet}
+    for i in range(TEST_GAMES):
+        results.append(pool.apply_async(run_test, [rules, first_agent, second_agent, 
+            first_agent_turn], kwds))
+
+    pool.close()
+    pool.join()
+
+    for result in results:
+        val = result.get()
+        num_moves, game_state = val[0], val[1]
+
+        if first_agent.has_been_learning_agent:
+            result_f.append(1 if game_state.is_first_agent_win() else 0)
+
+        if second_agent.has_been_learning_agent:
+            result_s.append(1 if game_state.is_second_agent_win() else 0)
+
+    return result_f, result_s
+
+
 def run_games(first_agent, second_agent, first_agent_turn, num_games, num_training=0, quiet=False, 
                 first_file_name="./data/first_save", second_file_name="./data/second_save", 
                 first_weights_file_name="./data/first_weights", 
@@ -394,7 +429,6 @@ def run_games(first_agent, second_agent, first_agent_turn, num_games, num_traini
 
                 if (i+1) % WEIGHTS_SAVE_FREQ == 0:
                     if len(first_w_deq) != 0 and len(first_w_deq) % NUM_WEIGHTS_REM == 0:
-                        # print('popping')
                         first_w_deq.popleft()
                     first_w_deq.append(np.array(first_agent.weights))
         
@@ -427,15 +461,9 @@ def run_games(first_agent, second_agent, first_agent_turn, num_games, num_traini
                 result_f = []
                 result_s = []
                 print('strting', TEST_GAMES, 'tests')
-                for i in range(TEST_GAMES):
-                    game = rules.new_game(first_agent, second_agent, first_agent_turn, quiet=True)
-                    num_moves, game_state = game.run()
 
-                    if first_agent.has_been_learning_agent:
-                        result_f.append(1 if game_state.is_first_agent_win() else 0)
-
-                    if second_agent.has_been_learning_agent:
-                        result_s.append(1 if game_state.is_second_agent_win() else 0)
+                result_f, result_s = \
+                multiprocess(rules, first_agent, second_agent, first_agent_turn, quiet=True)
 
                 if first_agent.has_been_learning_agent:
                     first_writer_res.writerow(result_f)
@@ -450,6 +478,7 @@ def run_games(first_agent, second_agent, first_agent_turn, num_games, num_traini
 
 
     except Exception as e:
+        print(sys.exc_info()[0])
         traceback.print_tb(e.__traceback__)
 
     finally:
