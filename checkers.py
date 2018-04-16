@@ -356,7 +356,7 @@ def multiprocess(rules, first_agent, second_agent, first_agent_turn, quiet=True)
     result_f = [[], []]
     result_s = [[], []]
 
-    pool = Pool()
+    pool = Pool(4)
     kwds = {'quiet': quiet}
     for i in range(TEST_GAMES):
         results.append(pool.apply_async(run_test, [rules, first_agent, second_agent, 
