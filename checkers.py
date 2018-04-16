@@ -288,6 +288,15 @@ def read_command(argv):
                       help=default('file to save results for the second agent (used only ' +
                         'if this agent is a learning agent)'), default='./data/second_results')
 
+    parser.add_option('-g', '--firstMResult', dest='first_m_results', type='string',
+                      help=default('file to save num moves for the first agent (used only ' +
+                        'if this agent is a learning agent)'), default='./data/first_m_results')
+
+    parser.add_option('-i', '--secondMResult', dest='second_m_results', type='string',
+                      help=default('file to save num moves for the second agent (used only ' +
+                        'if this agent is a learning agent)'), default='./data/second_m_results')
+
+
     parser.add_option('-p', '--playSelf', dest='play_against_self', type='int',
                       help=default('whether first agent is to play agains itself (only' +
                         'for rl agents)'), default=0)
@@ -323,6 +332,10 @@ def read_command(argv):
     args['first_result_file_name'] = options.first_results
     args['second_result_file_name'] = options.second_results
 
+    args['first_m_result_file_name'] = options.first_m_results
+    args['second_m_result_file_name'] = options.second_m_results
+
+
     args['play_against_self'] = options.play_against_self == 1
 
     return args
@@ -337,8 +350,8 @@ def run_test(rules, first_agent, second_agent, first_agent_turn, quiet=True):
 def multiprocess(rules, first_agent, second_agent, first_agent_turn, quiet=True):
     results = []
 
-    result_f = []
-    result_s = []
+    result_f = [[], []]
+    result_s = [[], []]
 
     pool = Pool()
     kwds = {'quiet': quiet}
@@ -355,15 +368,19 @@ def multiprocess(rules, first_agent, second_agent, first_agent_turn, quiet=True)
 
         if first_agent.has_been_learning_agent:
             if game_state.max_moves_done:
-                result_f.append(0.5)
+                result_f[0].append(0.5)
             else:
-                result_f.append(1 if game_state.is_first_agent_win() else 0)
+                result_f[0].append(1 if game_state.is_first_agent_win() else 0)
+
+            result_f[1].append(num_moves)
 
         if second_agent.has_been_learning_agent:
             if game_state.max_moves_done:
-                result_s.append(0.5)
+                result_s[0].append(0.5)
             else:
-                result_s.append(1 if game_state.is_second_agent_win() else 0)
+                result_s[0].append(1 if game_state.is_second_agent_win() else 0)
+
+            result_s[1].append(num_moves)
 
     return result_f, result_s
 
@@ -374,6 +391,8 @@ def run_games(first_agent, second_agent, first_agent_turn, num_games, num_traini
                 second_weights_file_name="./data/second_weights",
                 first_result_file_name="./data/first_results",
                 second_result_file_name="./data/second_results", 
+                first_m_result_file_name="./data/first_m_results",
+                second_m_result_file_name="./data/second_m_results", 
                 play_against_self=False):
     """
     first_agent: instance of Agent which reflects first agent
@@ -393,6 +412,9 @@ def run_games(first_agent, second_agent, first_agent_turn, num_games, num_traini
             first_f_res = open_file(first_result_file_name)
             first_writer_res = csv.writer(first_f_res, lineterminator='\n')
 
+            first_f_m_res = open_file(first_m_result_file_name)
+            first_writer_m_res = csv.writer(first_f_m_res, lineterminator='\n')
+
             first_f_str = ""
             first_writer_w_list = []
 
@@ -403,6 +425,9 @@ def run_games(first_agent, second_agent, first_agent_turn, num_games, num_traini
 
             second_f_res = open_file(second_result_file_name)
             second_writer_res = csv.writer(second_f_res, lineterminator='\n')
+
+            second_f_m_res = open_file(second_m_result_file_name)
+            second_writer_m_res = csv.writer(second_f_m_res, lineterminator='\n')
 
             second_f_str = ""
             second_writer_w_list = []
@@ -475,10 +500,12 @@ def run_games(first_agent, second_agent, first_agent_turn, num_games, num_traini
                 multiprocess(rules, first_agent, second_agent, first_agent_turn, quiet=True)
 
                 if first_agent.has_been_learning_agent:
-                    first_writer_res.writerow(result_f)
+                    first_writer_res.writerow(result_f[0])
+                    first_writer_m_res.writerow(result_f[1])
 
                 if second_agent.has_been_learning_agent:
-                    second_writer_res.writerow(result_s)
+                    second_writer_res.writerow(result_s[0])
+                    second_writer_m_res.writerow(result_s[1])
 
             if first_agent.has_been_learning_agent and play_against_self:
                 if (i+1) % CHANGE_AGENT_FREQ == 0:
@@ -494,6 +521,7 @@ def run_games(first_agent, second_agent, first_agent_turn, num_games, num_traini
         if first_agent.has_been_learning_agent:
             first_f.close()
             first_f_res.close()
+            first_f_m_res.close()
 
             first_f_w = open_file(first_weights_file_name)
             first_writer_w = csv.writer(first_f_w, lineterminator='\n')
@@ -503,6 +531,7 @@ def run_games(first_agent, second_agent, first_agent_turn, num_games, num_traini
         if second_agent.has_been_learning_agent:
             second_f.close()
             second_f_res.close()
+            second_f_m_res.close()
 
             second_f_w = open_file(second_weights_file_name)
             second_writer_w = csv.writer(second_f_w, lineterminator='\n')
