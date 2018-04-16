@@ -4,6 +4,9 @@ from functools import reduce
 
 
 CHECKERS_FEATURE_COUNT = 8
+WIN_REWARD = 500
+LOSE_REWARD = -500
+LIVING_REWARD = -0.1
 
 
 class Board:
@@ -399,9 +402,9 @@ def checkers_reward(state, action, next_state):
     if next_state.is_game_over():
         # infer turn from current state, because at the end same state is used by both agents
         if state.is_first_agent_turn():
-            return 10 if next_state.is_first_agent_win() else -10
+            return WIN_REWARD if next_state.is_first_agent_win() else LOSE_REWARD
         else:
-            return 10 if next_state.is_second_agent_win() else -10
+            return WIN_REWARD if next_state.is_second_agent_win() else LOSE_REWARD
 
     agent_ind = 0 if state.is_first_agent_turn() else 1
     oppn_ind = 1 if state.is_first_agent_turn() else 0
@@ -430,7 +433,7 @@ def checkers_reward(state, action, next_state):
     reward = r_3 * 0.2 + r_4 * 0.3 + r_1 * (-0.4) + r_2 * (-0.5)
 
     if reward == 0:
-        reward = -0.1
+        reward = LIVING_REWARD
 
     return reward
 
