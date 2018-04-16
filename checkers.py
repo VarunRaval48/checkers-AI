@@ -1,6 +1,7 @@
 import copy
 import sys
 import csv
+import time
 import traceback
 from collections import deque
 from multiprocessing import Pool
@@ -16,7 +17,7 @@ import numpy as np
 NUM_WEIGHTS_REM = 5
 WEIGHTS_SAVE_FREQ = 50
 WRITE_FREQ = 100
-TEST_FREQ = 10
+TEST_FREQ = 100
 TEST_GAMES = 100
 NOTIFY_FREQ = 50
 CHANGE_AGENT_FREQ = 10
@@ -532,6 +533,7 @@ if __name__ == '__main__':
 
     # print(game_state.player_info())
 
-
+    start_time = time.time()
     args = read_command(sys.argv[1:])
     run_games(**args)
+    print(time.time() - start_time)
