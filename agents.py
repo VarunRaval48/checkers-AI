@@ -382,3 +382,52 @@ class QLearningAgent(ReinforcementLearningAgent):
             reward = self.reward_function(self.prev_state, self.prev_action, state)
             # print('reward is', reward)
             self.observe_transition(self.prev_state, self.prev_action, state, reward)
+
+
+class SarsaLearningAgent(QLearningAgent):
+
+    def __init__(self, alpha=0.01, gamma=0.1, epsilon=0.5, is_learning_agent=True, weights=None):
+        
+        QLearningAgent.__init__(self, alpha, gamma, epsilon, is_learning_agent, weights)
+
+
+    def update(self, state, action, next_state, next_action, reward):
+
+        features = checkers_features(state, action)
+
+        if next_action is None:
+            next_q_value = 0.0
+        else:
+            next_q_value = \
+            self.get_q_value(next_state, next_action, checkers_features(next_state, next_action))
+    
+        expected = reward + self.gamma * next_q_value
+
+        current = self.get_q_value(state, action, features)
+
+        temporal_difference = expected - current
+
+        for i in range(CHECKERS_FEATURE_COUNT):
+            self.weights[i] = self.weights[i] + self.alpha * (temporal_difference) * features[i]
+
+
+    def observe_transition(self, state, action, next_state, next_action, reward):
+        """
+        state: the state (s) in which action was taken
+        action: the action (a) taken in the state (s)
+        next_state: the next state (s'), in which agnet will perform next action, 
+                    that resulted from state (s) and action (a)
+        reward: reward obtained for taking action (a) in state (s) and going to next state (s')
+        """
+        self.episode_rewards += reward
+        self.update(state, action, next_state, next_action, reward)
+
+
+    def observation_function(self, state):
+        if self.prev_state is not None:
+            reward = self.reward_function(self.prev_state, self.prev_action, state)
+            # print('reward is', reward)
+            action = self.get_action(state)
+            self.observe_transition(self.prev_state, self.prev_action, state, action, reward)
+
+            return action

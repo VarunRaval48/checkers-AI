@@ -208,9 +208,12 @@ def load_agent(agent_type, agent_learn, weights=None, depth=3):
         return KeyBoardAgent()
     elif agent_type == 'ab':
         return AlphaBetaAgent(depth=depth)
-    elif agent_type == 'rl':
+    elif agent_type == 'ql':
         is_learning_agent = True if agent_learn else False
         return QLearningAgent(is_learning_agent=is_learning_agent, weights=weights)
+    elif agent_type == 'sl':
+        is_learning_agent = True if agent_learn else False
+        return SarsaLearningAgent(is_learning_agent=is_learning_agent, weights=weights)
     else:
         raise Exception('Invalid agent ' + str(agent_type))
 
