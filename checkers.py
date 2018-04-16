@@ -41,6 +41,8 @@ class GameState:
         self.board = Board(prev_spots, the_player_turn)
         self.max_moves_done = False
 
+    def get_num_agents(self):
+        return 2
 
     def get_legal_actions(self):
         """
@@ -194,7 +196,7 @@ class ClassicGameRules:
         return game
 
 
-def load_agent(agent_type, agent_learn, weights=None):
+def load_agent(agent_type, agent_learn, weights=None, depth=3):
     """
     agent_type: type of agent, e.g. k, ab, rl
 
@@ -204,7 +206,7 @@ def load_agent(agent_type, agent_learn, weights=None):
     if agent_type == 'k':
         return KeyBoardAgent()
     elif agent_type == 'ab':
-        return AlphaBetaAgent()
+        return AlphaBetaAgent(depth=depth)
     elif agent_type == 'rl':
         is_learning_agent = True if agent_learn else False
         return QLearningAgent(is_learning_agent=is_learning_agent, weights=weights)
