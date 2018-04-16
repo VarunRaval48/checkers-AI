@@ -403,7 +403,7 @@ def run_games(first_agent, second_agent, first_agent_turn, num_games, num_traini
     """
 
     try:
-        write_str = "num_moves,win,reward\n"
+        write_str = "num_moves,win,reward,max_q_value\n"
         if first_agent.is_learning_agent:
             first_f = open_file(first_file_name, header=write_str)
 
@@ -458,7 +458,11 @@ def run_games(first_agent, second_agent, first_agent_turn, num_games, num_traini
             if first_agent.is_learning_agent:
                 reward = first_agent.episode_rewards
                 win = 1 if game_state.is_first_agent_win() else 0
-                w_str = str(num_moves) + "," + str(win) + "," + str(reward) + "\n"
+
+                init_state = GameState(the_player_turn=first_agent_turn)
+                max_q_value = first_agent.compute_value_from_q_values(init_state)
+
+                w_str = str(num_moves) + "," + str(win) + "," + str(reward) + "," + str(max_q_value) + "\n"
                 first_f_str += w_str
 
                 if (i+1) % WEIGHTS_SAVE_FREQ == 0:
@@ -473,7 +477,11 @@ def run_games(first_agent, second_agent, first_agent_turn, num_games, num_traini
             if second_agent.is_learning_agent:
                 reward = second_agent.episode_rewards
                 win = 1 if game_state.is_second_agent_win() else 0
-                w_str = str(num_moves) + "," + str(win) + "," + str(reward) + "\n"
+
+                init_state = GameState(the_player_turn=first_agent_turn)
+                max_q_value = second_agent.compute_value_from_q_values(init_state)
+
+                w_str = str(num_moves) + "," + str(win) + "," + str(reward) + "," + str(max_q_value) + "\n"
                 second_f_str += w_str
 
                 if (i+1) % WEIGHTS_SAVE_FREQ == 0:
