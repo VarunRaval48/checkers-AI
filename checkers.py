@@ -354,10 +354,16 @@ def multiprocess(rules, first_agent, second_agent, first_agent_turn, quiet=True)
         num_moves, game_state = val[0], val[1]
 
         if first_agent.has_been_learning_agent:
-            result_f.append(1 if game_state.is_first_agent_win() else 0)
+            if game_state.max_moves_done:
+                result_f.append(0.5)
+            else:
+                result_f.append(1 if game_state.is_first_agent_win() else 0)
 
         if second_agent.has_been_learning_agent:
-            result_s.append(1 if game_state.is_second_agent_win() else 0)
+            if game_state.max_moves_done:
+                result_s.append(0.5)
+            else:
+                result_s.append(1 if game_state.is_second_agent_win() else 0)
 
     return result_f, result_s
 
