@@ -165,7 +165,7 @@ class GameState:
         """
         piece_locations = self.board.get_piece_locations()
 
-        capture_moves = reduce(lambda x, y: x + y, list(map(self.board.get_capture_moves, piece_locations)))
+        capture_moves = reduce(lambda x, y: x + y, list(map(self.board.get_capture_moves, piece_locations)), [])
         num_pieces_in_attack = 0
 
         pieces_in_attack = set()
