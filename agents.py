@@ -448,7 +448,6 @@ class SarsaSoftmaxAgent(SarsaLearningAgent):
 
     def get_action(self, state):
         legal_actions = state.get_legal_actions()
-        action = None
 
         if not legal_actions:
             return None
@@ -463,6 +462,8 @@ class SarsaSoftmaxAgent(SarsaLearningAgent):
         probs = exps / np.sum(exps)
 
         action_ind = np.random.choice(len(legal_actions), p=probs)
+
+        self.do_action(state, legal_actions[action_ind])
         return legal_actions[action_ind]
 
     def update_parameters(self, freq, num_games):
