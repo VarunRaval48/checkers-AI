@@ -383,6 +383,11 @@ class QLearningAgent(ReinforcementLearningAgent):
             # print('reward is', reward)
             self.observe_transition(self.prev_state, self.prev_action, state, reward)
 
+    def update_parameters(self, num_games):
+        if num_games % 10000 == 0:
+            self.original_alpha /= 2.0
+            self.original_epsilon /= 2.0
+
 
 class SarsaLearningAgent(QLearningAgent):
 
@@ -431,3 +436,35 @@ class SarsaLearningAgent(QLearningAgent):
             self.observe_transition(self.prev_state, self.prev_action, state, action, reward)
 
             return action
+
+
+class SarsaSoftmaxAgent(SarsaLearningAgent):
+
+    def __init__(self, alpha=0.01, gamma=0.1, t=1.0, is_learning_agent=True, weights=None):
+        SarsaLearningAgent.__init__(self, alpha=alpha, gamma=gamma,
+            is_learning_agent=is_learning_agent, weights=weights)
+
+        self.t = t
+
+    def get_action(self, state):
+        legal_actions = state.get_legal_actions()
+        action = None
+
+        if not legal_actions:
+            return None
+
+        if self.epsilon == 0.0:
+            return self.compute_action_from_q_values(state, legal_actions)
+
+        q_values = [self.get_q_value(state, action, checkers_features(state, action))
+                for action in legal_actions]
+
+        exps = np.exp(q_values) / self.t
+        probs = exps / np.sum(exps)
+
+        action_ind = np.random.choice(len(legal_actions), p=probs)
+        return legal_actions[action_ind]
+
+    def update_parameters(self, num_games):
+        if num_games % 10000 == 0:
+            self.t /= 2.0

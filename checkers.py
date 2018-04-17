@@ -214,6 +214,9 @@ def load_agent(agent_type, agent_learn, weights=None, depth=3):
     elif agent_type == 'sl':
         is_learning_agent = True if agent_learn else False
         return SarsaLearningAgent(is_learning_agent=is_learning_agent, weights=weights)
+    elif agent_type == 'ssl':
+        is_learning_agent = True if agent_learn else False
+        return SarsaSoftmaxAgent(is_learning_agent=is_learning_agent, weights=weights)
     else:
         raise Exception('Invalid agent ' + str(agent_type))
 
@@ -261,8 +264,8 @@ def read_command(argv):
     parser.add_option('-t', '--turn', dest='turn', type='int', 
                       help=default('which agent should take first turn'), default=1)
 
-    parser.add_option('-r', '--numTraining', dest='num_train', type='int',
-                      help=default('number of training steps'), default=0)
+    parser.add_option('-r', '--updateParam', dest='update_param', type='int',
+                      help=default('update learning parameters as time passes'), default=0)
 
     parser.add_option('-q', '--quiet', dest='quiet', type='int', 
                       help=default('to be quiet or not'), default=0)
@@ -322,7 +325,7 @@ def read_command(argv):
 
     args['first_agent_turn'] = options.turn == 1
 
-    args['num_training'] = options.num_train
+    args['update_param'] = options.update_param
 
     args['quiet'] = True if options.quiet else False
 
@@ -388,7 +391,7 @@ def multiprocess(rules, first_agent, second_agent, first_agent_turn, quiet=True)
     return result_f, result_s
 
 
-def run_games(first_agent, second_agent, first_agent_turn, num_games, num_training=0, quiet=False, 
+def run_games(first_agent, second_agent, first_agent_turn, num_games, update_param=0, quiet=False, 
                 first_file_name="./data/first_save", second_file_name="./data/second_save", 
                 first_weights_file_name="./data/first_weights", 
                 second_weights_file_name="./data/second_weights",
@@ -472,7 +475,7 @@ def run_games(first_agent, second_agent, first_agent_turn, num_games, num_traini
                     if len(first_w_deq) != 0 and len(first_w_deq) % NUM_WEIGHTS_REM == 0:
                         first_w_deq.popleft()
                     first_w_deq.append(np.array(first_agent.weights))
-        
+
                 if (i+1) % WRITE_FREQ == 0:
                     first_f.write(first_f_str)
                     first_f_str = ""
@@ -522,6 +525,12 @@ def run_games(first_agent, second_agent, first_agent_turn, num_games, num_traini
                 if (i+1) % CHANGE_AGENT_FREQ == 0:
                     weights = first_w_deq[-1]
                     second_agent = QLearningAgent(weights=weights, is_learning_agent=False)
+
+            if first_agent.has_been_learning_agent and update_param:
+                first_agent.update_parameters(i)
+
+            if second_agent.has_been_learning_agent and update_param:
+                second_agent.update_parameters(i)
 
 
     except Exception as e:
