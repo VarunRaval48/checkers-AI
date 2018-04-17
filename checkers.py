@@ -527,10 +527,10 @@ def run_games(first_agent, second_agent, first_agent_turn, num_games, update_par
                     second_agent = QLearningAgent(weights=weights, is_learning_agent=False)
 
             if first_agent.has_been_learning_agent and update_param:
-                first_agent.update_parameters(i)
+                first_agent.update_parameters(update_param, i)
 
             if second_agent.has_been_learning_agent and update_param:
-                second_agent.update_parameters(i)
+                second_agent.update_parameters(update_param, i)
 
 
     except Exception as e:
