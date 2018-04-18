@@ -1,0 +1,2 @@
+alpha, epsilon decreased by 1/2 at 10000 iterations, started with 0.01, 0.5
+performing 5000 iterations after 27000 iterations with alpha=0.0025, epsilon=0.125

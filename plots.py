@@ -16,18 +16,18 @@ def plot_train(file_name):
 	xlabel = 'number of episode'
 
 	plt.title('Number of moves vs episodes')
-	plt.plot(range(0, num_games), num_moves, '-o', markersize=5)
+	plt.plot(range(0, num_games), num_moves, 'o', markersize=5)
 	plt.xlabel(xlabel)
 	plt.ylabel('Number of moves')
 	plt.show()
 
 	plt.title('Wins vs episodes')
-	plt.plot(range(0, num_games), wins, '-o', markersize=5)
+	plt.plot(range(0, num_games), wins, 'o', markersize=5)
 	plt.ylabel('Wins or loss')
 	plt.show()
 
 	plt.title('Rewards vs episodes')
-	plt.plot(range(0, num_games), rewards, '-o', markersize=5)
+	plt.plot(range(0, num_games), rewards, 'o', markersize=5)
 	plt.ylabel('Rewards')
 	plt.show()
 
