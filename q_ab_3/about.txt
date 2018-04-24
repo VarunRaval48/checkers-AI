@@ -1,0 +1,2 @@
+started with alpha 0.01, epsilon 0.50
+decreased epsilon to 0.25 after 3500 games
