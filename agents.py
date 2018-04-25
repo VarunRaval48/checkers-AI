@@ -1,3 +1,7 @@
+"""
+This file contains implementation of all the agents.
+"""
+
 from abc import ABC, abstractmethod
 from util import *
 import random
@@ -229,7 +233,6 @@ class QLearningAgent(ReinforcementLearningAgent):
         alpha: learning rate
         gamma: discount factor
         epsilon: exploration constant
-        num_training: number of training steps before stop learning
         is_learning_agent: whether to treat this agent as learning agent or not
         weights: default weights
         """

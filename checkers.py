@@ -1,3 +1,7 @@
+"""
+This file contains code to handle game play
+"""
+
 import copy
 import sys
 import csv

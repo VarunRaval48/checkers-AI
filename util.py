@@ -1,3 +1,7 @@
+"""
+This file contains various helper methods.
+"""
+
 
 import random
 from pathlib import Path

@@ -1,3 +1,9 @@
+"""
+This file contains implementation of checkers game.
+This file also contains feature, reward functions and
+methods to run a single game.
+"""
+
 import math
 import copy
 from functools import reduce
