@@ -15,13 +15,13 @@ By default, running `python checkers.py` will run a multiplayer checkers game.
 When asked the question *./s_ab_3/first_weights File exists: use weights:(y)/n:*, press enter
 
 
-### See game play between Alpha-Beta and SARSA agent
+#### See game play between Alpha-Beta and SARSA agent
 To see Alpha Beta agent and Reinforcement learning agent playing games, enter following command:
 
 `python checkers.py -f sl -s ab -z ./s_ab_3/first_weights -l 0`
 
 
-### Play against SARSA agent
+#### Play against SARSA agent
 To play game against SARSA agent, enter following command:
 
 `python checkers.py -f sl -s k -z ./s_ab_3/first_weights -l 0`
@@ -37,7 +37,7 @@ in start position enter x1 y1 press enter
 in end position enter x2 y2 x3 y3 press enter
 
 
-### Play against Alpha-Beta agent
+#### Play against Alpha-Beta agent
 To play game against alphabeta agent, enter following command:
 
 `python checkers.py -f ab -s k`
@@ -53,10 +53,10 @@ Evaluation function is as following:
 1. If minimax agent wins, +500
 2. If minimax agent loses, −500
 3. If none of the above happens, evaluation function is summation of following values
-  + (1) times the number of minimax agent’s pawns
-  + (2) times the number of minimax agent’s kings
-  + (−1) times the number of opponent’s pawns
-  + (−2) times the number of opponent’s kings
+  * (1) times the number of minimax agent’s pawns
+  * (2) times the number of minimax agent’s kings
+  * (−1) times the number of opponent’s pawns
+  * (−2) times the number of opponent’s kings
 
 ## About SARSA agent
 
@@ -72,7 +72,7 @@ following features to represent state action *(s, a)* pairs:
 8. Number of agent’s pieces being attacked by opponent in state *s'*
 
 
-### Reward function
+#### Reward function
 The agent takes action *a* in state *s* and moves to state *s'*. The opponent takes action in state *s'* and
 moves to state *s''*. The environment will then given the reward to the agent for the action *a* in state *s*. Thus reward function depends on current state of the agent *s*, the action it took *a* and the state in which it will take next action *s''*.
 * Reward function is sum of the following:
