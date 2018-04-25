@@ -12,18 +12,16 @@ By default, running `python checkers.py` will run a multiplayer checkers game.
 
 ## How to Play against Agent
 
-When asked the following question
-
-*./s_ab_3/first_weights File exists: use weights:(y)/n:*
-
-press enter
+When asked the question *./s_ab_3/first_weights File exists: use weights:(y)/n:*, press enter
 
 
+### See game play between Alpha-Beta and SARSA agent
 To see Alpha Beta agent and Reinforcement learning agent playing games, enter following command:
 
 `python checkers.py -f sl -s ab -z ./s_ab_3/first_weights -l 0`
 
 
+### Play against SARSA agent
 To play game against SARSA agent, enter following command:
 
 `python checkers.py -f sl -s k -z ./s_ab_3/first_weights -l 0`
@@ -39,11 +37,12 @@ in start position enter x1 y1 press enter
 in end position enter x2 y2 x3 y3 press enter
 
 
+### Play against Alpha-Beta agent
 To play game against alphabeta agent, enter following command:
 
 `python checkers.py -f ab -s k`
 
 
-## References
+## Acknowledgements
 
 Board class for checkers game specified in game.py is adapted from the project of [SamRagusa](https://github.com/SamRagusa/Checkers-Reinforcement-Learning).
