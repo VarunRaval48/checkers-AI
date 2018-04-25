@@ -53,10 +53,10 @@ Evaluation function is as following:
 1. If minimax agent wins, +500
 2. If minimax agent loses, −500
 3. If none of the above happens, evaluation function is summation of following values:
-  * (1) times the number of minimax agent’s pawns
-  * (2) times the number of minimax agent’s kings
-  * (−1) times the number of opponent’s pawns
-  * (−2) times the number of opponent’s kings
+   * (1) times the number of minimax agent’s pawns
+   * (2) times the number of minimax agent’s kings
+   * (−1) times the number of opponent’s pawns
+   * (−2) times the number of opponent’s kings
 
 ## About SARSA agent
 
